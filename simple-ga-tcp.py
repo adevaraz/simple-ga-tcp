@@ -7,7 +7,6 @@
 # for Test Case Prioritization"
 #
 # (C) 2021 Evan Lokajaya & Zara Veda, Bandung, Indonesia
-# Released under GNU Public License (GPL)
 # email zaraveda.zv@gmail.com
 # -----------------------------------------------------------
 
@@ -28,9 +27,8 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
     print("processing GA prioritization..")
 
-    # p: population
     p = []
-    l = 2
+    l = 2           # length of chromosome
     pop_size = 20
 
     while True:
@@ -42,10 +40,7 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
             crossover(p_c, p, l)
             mutation(p_m, p, l)
 
-            if True:
-                # TODO: change condition to any order of test suit
-                # discover 100% fault
-
+            if find_full_fault(l, tr):
                 res_min = find_max(p)
             else:
                 g = g + 1
@@ -61,6 +56,15 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
     return res_min
 
+def find_full_fault(len, tr):
+    full_fault = [1] * len
+
+    for row in tr:
+        if row == full_fault:
+            return True
+        else:
+            return False
+
 def initial_population(pop_size, chromolen):
     """
     Initialize population from test cases
@@ -68,22 +72,24 @@ def initial_population(pop_size, chromolen):
     Parameters:
 
     pop_size: population size
-    chromolen: 
+    chromolen: length of the chromosome
 
     return: None
     """
 
     print("initializing population..")
-    i = 1
+    a = 1
 
     while True:
-        p_i = None
+        p_a = []         # permutation encoding
 
         while True:
-            p_i = p_i or t #random T which not in chromosome
-            if abs(p_i) <= chromolen:
+            rand_tc = random.choice(t)
+            p_a = p_a or rand_tc
+            if abs(p_a) <= chromolen:
                 break
         
+        i = i + 1
         if i <= pop_size:
             break
 
@@ -100,9 +106,19 @@ def calculate_fitness(p, tr):
     """
 
     i = 1
+    pop_size = len(p)
+    fitness_val = [0] * pop_size
+    total_faults = len(tr[0])
 
     while True:
         # TODO: insert calculate fitness eq.
+        # tc = tc with value string of tr
+        revealed_faults = 0
+        for tc in p[i]:
+            # value 1 kromosom (1 p) = array of int; angka test case ke berapa
+            revealed_faults = revealed_faults or int(tr[tc])
+
+        fitness_val[i] = revealed_faults / total_faults
 
         i = i + 1
 
@@ -123,6 +139,7 @@ def crossover(p_c, p, l):
     """
 
     print("crossover chromosomes..")
+
     # TODO: insert loop for p_c percentage of chromosome
     # - generate cp (crossover point)
     # - exchange chromosome at cp
@@ -178,8 +195,10 @@ def main():
     max_gen: maximum GA generation
     """
 
+    # TODO: bikin struct buat chromosome
+
     t = []
-    tr = [[]]
+    tr = ["" for i in range(3)]
     p_c = 0.0
     p_m = 0.0
     max_gen = 100
