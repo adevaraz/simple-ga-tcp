@@ -83,25 +83,9 @@ def initial_population(t, pop_size, chromolen):
     """
 
     print("initializing population..")
-    # t = [] # set of test case
-    # a = 1
 
     permutation_res = list(itertools.permutations(t, chromolen))
     p = get_rand_elms(permutation_res, pop_size)
-    # while True:
-        # p_a = []         # permutation encoding
-
-
-        # while True:
-            # rand_tc = random.choice(t)
-            # p[a] = rand_tc
-            
-            # if abs(p_a) <= chromolen:
-            #     break
-        
-        # i = i + 1
-        # if i <= pop_size:
-        #     break
 
     return p
 
@@ -136,8 +120,6 @@ def calculate_fitness(p, tr):
     total_faults = len(tr[0])
 
     while True:
-        # TODO: insert calculate fitness eq.
-        # tc = tc with value string of tr
         fault = ''.join('0' for _ in range(total_faults))
         fault_ba = bitarray(fault)
         for tc in p[i]:
@@ -174,11 +156,20 @@ def crossover(p_c, p, l):
     while i <= num_of_crossover:
         cp = random.randrange(1, l)
 
-        
-        i += 2
-    # - exchange chromosome at cp
+        p1_f = p[i][:cp]
+        p1_b = p[i][cp:]
 
-    # - end loop
+        p2_f = p[i+1][:cp]
+        p2_b = p[i+1][cp:]
+
+        child1 = np.concatenate((p1_f, p2_b))
+        child2 = np.concatenate((p2_f, p1_b))
+
+        p = np.vstack((p, child1, child2))
+
+        i += 2
+
+    return p
 
 def mutation(t, p_m, p, l):
     """
@@ -197,7 +188,7 @@ def mutation(t, p_m, p, l):
 
     num_of_mutation = p_m * len(p)
 
-    i = 0
+    i = len(p) / 2
     while i <= num_of_mutation:
         mp = random.randrange(1, l)
 
@@ -209,19 +200,6 @@ def mutation(t, p_m, p, l):
                 if choosen not in p[i]:
                     p[i][duplicate_index] = choosen
                     break
-        # else: # masih asumsi aja kalo gak ada duplicate, yang di mutasi yang di mp
-        #     print("mp")
-        #     print(mp)
-        #     while True:
-        #         choosen = random.choice(t)
-        #         print(choosen)
-
-        #         tup = p[i]
-        #         print(tup)
-
-        #         if choosen not in tup:
-        #             tup[mp] = choosen
-        #             break
 
         i += 1
     
@@ -267,8 +245,9 @@ def main():
     """
 
     # TODO: bikin struct buat chromosome
+    # TODO: modify tr to tuple
 
-    t = ['t1', 't2', 't3', 't4']
+    t = np.array(['t1', 't2', 't3', 't4'])
     tr = ["" for i in range(3)]
     p_c = 0.6
     p_m = 0.4
@@ -277,20 +256,16 @@ def main():
 
     # prio_ga(t, tr, max_gen, p_c, p_m)
 
-    p = np.asarray(initial_population(t, 4, 2))
-    # p = [[1, 2], [1, 3], [2, 3]]
-    # tr = ['111000', '011110', '100001']
-    # print("population:")
-    # print(p)
-    # mutated_pop = mutation(t, p_m, p, 2)
-    # print("mutated population:")
-    # print(mutated_pop)
+    p = np.asarray(initial_population(t, 4, 3))
+    print("population:")
+    print(p)
 
-    # fitness_val = calculate_fitness(p, tr)
-    # print('fitness value')
-    # print(fitness_val)
+    p = crossover(p_c, p, 3)
+    print(p)
 
-    crossover()
+    mutated_pop = mutation(t, p_m, p, 3)
+    print("mutated population:")
+    print(mutated_pop)
 
 if __name__ == "__main__":
     main()
