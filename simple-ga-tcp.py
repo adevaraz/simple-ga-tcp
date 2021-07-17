@@ -12,6 +12,8 @@
 
 import itertools
 import random
+import numpy as np
+from bitarray import bitarray
 
 def prio_ga(t, tr, max_gen, p_c, p_m):
     """
@@ -35,7 +37,7 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
     pop_size = 100
 
     while True:
-        initial_population(pop_size, l)
+        p = initial_population(pop_size, l)
         g = 1       # generation number
 
         while True:
@@ -68,7 +70,7 @@ def find_full_fault(len, tr):
         else:
             return False
 
-def initial_population(pop_size, chromolen):
+def initial_population(t, pop_size, chromolen):
     """
     Initialize population from test cases
 
@@ -81,8 +83,8 @@ def initial_population(pop_size, chromolen):
     """
 
     print("initializing population..")
-    t = [] # set of test case
-    a = 1
+    # t = [] # set of test case
+    # a = 1
 
     permutation_res = list(itertools.permutations(t, chromolen))
     p = get_rand_elms(permutation_res, pop_size)
@@ -100,6 +102,8 @@ def initial_population(pop_size, chromolen):
         # i = i + 1
         # if i <= pop_size:
         #     break
+
+    return p
 
 def get_rand_elms(arr, max_elm):
     rand_elms = []
@@ -126,7 +130,7 @@ def calculate_fitness(p, tr):
     return: None
     """
 
-    i = 1
+    i = 0
     pop_size = len(p)
     fitness_val = [0] * pop_size
     total_faults = len(tr[0])
@@ -134,17 +138,20 @@ def calculate_fitness(p, tr):
     while True:
         # TODO: insert calculate fitness eq.
         # tc = tc with value string of tr
-        revealed_faults = 0
+        fault = ''.join('0' for _ in range(total_faults))
+        fault_ba = bitarray(fault)
         for tc in p[i]:
-            # value 1 kromosom (1 p) = array of int; angka test case ke berapa
-            revealed_faults = revealed_faults or int(tr[tc])
+            fault_ba = fault_ba | bitarray(tr[tc-1]) # or operator
 
-        fitness_val[i] = revealed_faults / total_faults
+        fault = fault_ba.to01() # get string back
+        fitness_val[i] = fault.count('1') / total_faults
 
         i = i + 1
 
-        if i < pop_size:
+        if i >= pop_size:
             break
+
+    return fitness_val
 
 def crossover(p_c, p, l):
     """
@@ -161,14 +168,19 @@ def crossover(p_c, p, l):
 
     print("crossover chromosomes..")
 
-    # TODO: insert loop for p_c percentage of chromosome
-    # - generate cp (crossover point)
-    cp = random.randrange(1, l)
+    num_of_crossover = p_c * len(p)
+
+    i = 0
+    while i <= num_of_crossover:
+        cp = random.randrange(1, l)
+
+        
+        i += 2
     # - exchange chromosome at cp
-    
+
     # - end loop
 
-def mutation(p_m, p, l):
+def mutation(t, p_m, p, l):
     """
     Perform mutation at mutation point (mp)
 
@@ -181,19 +193,39 @@ def mutation(p_m, p, l):
     return: None
     """
 
-    print("mutation chromosomes..")
-    # TODO: insert loop for pm percentage of chromosome
-    # - generate mp (mutation point)
+    print("mutating chromosomes..")
 
-    while True:
-    # - replace duplicate test case with test case which is not
-    # present in that chromosome
-        duplicate_index = find_duplicate(p_i)
+    num_of_mutation = p_m * len(p)
+
+    i = 0
+    while i <= num_of_mutation:
+        mp = random.randrange(1, l)
+
+        duplicate_index = find_duplicate(p[i])
         if duplicate_index != None:
-            # get random tc which is not same with the value
-            random.choice(p)
+            while True:
+                choosen = random.choice(t)
 
-    # - end loop
+                if choosen not in p[i]:
+                    p[i][duplicate_index] = choosen
+                    break
+        # else: # masih asumsi aja kalo gak ada duplicate, yang di mutasi yang di mp
+        #     print("mp")
+        #     print(mp)
+        #     while True:
+        #         choosen = random.choice(t)
+        #         print(choosen)
+
+        #         tup = p[i]
+        #         print(tup)
+
+        #         if choosen not in tup:
+        #             tup[mp] = choosen
+        #             break
+
+        i += 1
+    
+    return p
 
 def find_duplicate(chromosome):
     set_of_gen = set()
@@ -236,14 +268,29 @@ def main():
 
     # TODO: bikin struct buat chromosome
 
-    t = []
+    t = ['t1', 't2', 't3', 't4']
     tr = ["" for i in range(3)]
     p_c = 0.6
     p_m = 0.4
     # use three condition of number of generation: 25, 55, and 70
     max_gen = 25
 
-    prio_ga(t, tr, max_gen, p_c, p_m)
+    # prio_ga(t, tr, max_gen, p_c, p_m)
+
+    p = np.asarray(initial_population(t, 4, 2))
+    # p = [[1, 2], [1, 3], [2, 3]]
+    # tr = ['111000', '011110', '100001']
+    # print("population:")
+    # print(p)
+    # mutated_pop = mutation(t, p_m, p, 2)
+    # print("mutated population:")
+    # print(mutated_pop)
+
+    # fitness_val = calculate_fitness(p, tr)
+    # print('fitness value')
+    # print(fitness_val)
+
+    crossover()
 
 if __name__ == "__main__":
     main()
