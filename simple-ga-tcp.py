@@ -10,6 +10,9 @@
 # email zaraveda.zv@gmail.com
 # -----------------------------------------------------------
 
+import itertools
+import random
+
 def prio_ga(t, tr, max_gen, p_c, p_m):
     """
     Perform prioritization
@@ -29,11 +32,11 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
     p = []
     l = 2           # length of chromosome
-    pop_size = 20
+    pop_size = 100
 
     while True:
         initial_population(pop_size, l)
-        g = 1
+        g = 1       # generation number
 
         while True:
             calculate_fitness(p, tr)
@@ -78,20 +81,38 @@ def initial_population(pop_size, chromolen):
     """
 
     print("initializing population..")
+    t = [] # set of test case
     a = 1
 
-    while True:
-        p_a = []         # permutation encoding
+    permutation_res = list(itertools.permutations(t, chromolen))
+    p = get_rand_elms(permutation_res, pop_size)
+    # while True:
+        # p_a = []         # permutation encoding
 
-        while True:
-            rand_tc = random.choice(t)
-            p_a = p_a or rand_tc
-            if abs(p_a) <= chromolen:
-                break
+
+        # while True:
+            # rand_tc = random.choice(t)
+            # p[a] = rand_tc
+            
+            # if abs(p_a) <= chromolen:
+            #     break
         
-        i = i + 1
-        if i <= pop_size:
-            break
+        # i = i + 1
+        # if i <= pop_size:
+        #     break
+
+def get_rand_elms(arr, max_elm):
+    rand_elms = []
+    i = 0
+
+    while i < max_elm:
+        choosen = random.choice(arr)
+
+        if choosen not in rand_elms:
+            rand_elms.append(choosen)
+            i += 1
+
+    return rand_elms
 
 def calculate_fitness(p, tr):
     """
@@ -142,7 +163,9 @@ def crossover(p_c, p, l):
 
     # TODO: insert loop for p_c percentage of chromosome
     # - generate cp (crossover point)
+    cp = random.randrange(1, l)
     # - exchange chromosome at cp
+    
     # - end loop
 
 def mutation(p_m, p, l):
@@ -161,9 +184,25 @@ def mutation(p_m, p, l):
     print("mutation chromosomes..")
     # TODO: insert loop for pm percentage of chromosome
     # - generate mp (mutation point)
+
+    while True:
     # - replace duplicate test case with test case which is not
     # present in that chromosome
+        duplicate_index = find_duplicate(p_i)
+        if duplicate_index != None:
+            # get random tc which is not same with the value
+            random.choice(p)
+
     # - end loop
+
+def find_duplicate(chromosome):
+    set_of_gen = set()
+
+    for i, gen in enumerate(chromosome):
+        if gen in set_of_gen:
+            return i
+        else:
+            set_of_gen.add(gen)
 
 def find_max(p):
     """
@@ -199,9 +238,10 @@ def main():
 
     t = []
     tr = ["" for i in range(3)]
-    p_c = 0.0
-    p_m = 0.0
-    max_gen = 100
+    p_c = 0.6
+    p_m = 0.4
+    # use three condition of number of generation: 25, 55, and 70
+    max_gen = 25
 
     prio_ga(t, tr, max_gen, p_c, p_m)
 
