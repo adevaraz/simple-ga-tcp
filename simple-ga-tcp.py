@@ -41,12 +41,12 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
         g = 1       # generation number
 
         while True:
-            calculate_fitness(p, tr)
+            fitness_val = calculate_fitness(p, tr)
             crossover(p_c, p, l)
             mutation(p_m, p, l)
 
             if find_full_fault(l, tr):
-                res_min = find_max(p)
+                res_min = find_max(p, fitness_val)
             else:
                 g = g + 1
 
@@ -117,13 +117,14 @@ def calculate_fitness(p, tr):
     i = 0
     pop_size = len(p)
     fitness_val = [0] * pop_size
-    total_faults = len(tr[0])
+    total_faults = len(tr[0][1])
 
     while True:
         fault = ''.join('0' for _ in range(total_faults))
         fault_ba = bitarray(fault)
         for tc in p[i]:
-            fault_ba = fault_ba | bitarray(tr[tc-1]) # or operator
+            tc_fault = [item for item in tr if item[0] == tc] # search for tc fault
+            fault_ba = fault_ba | bitarray(tc_fault[0][1]) # or operator
 
         fault = fault_ba.to01() # get string back
         fitness_val[i] = fault.count('1') / total_faults
@@ -133,7 +134,7 @@ def calculate_fitness(p, tr):
         if i >= pop_size:
             break
 
-    return fitness_val
+    return np.array(fitness_val)
 
 def crossover(p_c, p, l):
     """
@@ -188,8 +189,9 @@ def mutation(t, p_m, p, l):
 
     num_of_mutation = p_m * len(p)
 
-    i = len(p) / 2
-    while i <= num_of_mutation:
+    i = int(len(p) / 2)
+    count = 0
+    while count <= num_of_mutation and i < len(p):
         mp = random.randrange(1, l)
 
         duplicate_index = find_duplicate(p[i])
@@ -214,7 +216,7 @@ def find_duplicate(chromosome):
         else:
             set_of_gen.add(gen)
 
-def find_max(p):
+def find_max(p, fitness):
     """
     Perform sort the population in ascending order of their
     fitness value
@@ -226,10 +228,11 @@ def find_max(p):
     return: p_sorted_asc; population in ascending order by fitness value
     """
 
-    print("sort population in asc order..")
-    p_sorted_asc = p.sort()
+    print("sort population in asc order by fitness value..")
+    # TODO: ganti cara sort pake numpy
+    p_sorted_asc = [p for _, p in sorted(zip(fitness.tolist(), p.tolist()))]
 
-    return p_sorted_asc
+    return np.array(p_sorted_asc[0])
 
 def main():
     """
@@ -244,28 +247,40 @@ def main():
     max_gen: maximum GA generation
     """
 
-    # TODO: bikin struct buat chromosome
-    # TODO: modify tr to tuple
-
-    t = np.array(['t1', 't2', 't3', 't4'])
-    tr = ["" for i in range(3)]
+    t = np.array([1, 2, 3, 4]) # tc is represented in number
+    tr = [(1, '101010'),
+          (2, '100100'),
+          (3, '101100'),
+          (4, '111000')]
     p_c = 0.6
     p_m = 0.4
     # use three condition of number of generation: 25, 55, and 70
     max_gen = 25
-
-    # prio_ga(t, tr, max_gen, p_c, p_m)
+    # max_gen = 55
+    # max_gen = 70
 
     p = np.asarray(initial_population(t, 4, 3))
     print("population:")
     print(p)
 
-    p = crossover(p_c, p, 3)
-    print(p)
+    fitness_val = calculate_fitness(p, tr)
+    print("fitness value:")
+    print(fitness_val)
 
-    mutated_pop = mutation(t, p_m, p, 3)
+    new_p = crossover(p_c, p, 3)
+    print("new population:")
+    print(new_p)
+
+    mutated_pop = mutation(t, p_m, new_p, 3)
     print("mutated population:")
     print(mutated_pop)
+
+    # fitness = np.array([1.0, 0.3, 0.2, 0.4])
+    fitness_val = calculate_fitness(p, tr)
+    p_sorted = find_max(mutated_pop, fitness_val)
+    print("best chromosome:")
+    print(p_sorted)
+
 
 if __name__ == "__main__":
     main()
