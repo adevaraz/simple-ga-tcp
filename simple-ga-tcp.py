@@ -44,48 +44,51 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
         p = np.array(initial_population(t, pop_size, l))
         g = 1       # generation number
 
+        print("=====================================")
+        print("TCP with Genetic Algorithm")
+        print("=====================================")
         print("generation:", g)
         while True:
-            print("=====================================")
-
-            print("population")
+            print("population:")
             print(p)
 
-            print("=====================================")
+            print("-------------------------------------")
 
             fitness_val = calculate_fitness(p, tr)
             print("fitness value")
             print(fitness_val)
 
             p = crossover(p_c, p, l)
-            print("after crossover")
+            print("crossover result:")
             print(p)
+            print("-------------------------------------")
 
             p = mutation(t, p_m, p, l)
-            print("after mutation")
+            print("mutation result:")
             print(p)
+            print("-------------------------------------")
 
             ts_fault = generate_binary_fault(p, tr)
             fitness_val = calculate_fitness(p, tr)
-            print("fitness value")
-            print(fitness_val)
+
+            print("population   ", "fitness value")
+            i = 0
+            for i in range(len(p)):
+                print(p[i], fitness_val[i])
+            print("-------------------------------------")
 
             fault_percentage = 1.0
             found = False
             while not found:
-                print("percentage in prio ga", fault_percentage)
                 if find_full_fault(ts_fault, fault_percentage):
                     res_min = find_max(p, fitness_val)
-                    print("current res_min")
-                    print(res_min)
                     found = True
                 else:
                     fault_percentage = fault_percentage - 0.05
-                    print("percentage in prio ga - after", fault_percentage)
 
                 if fault_percentage <= 0.0:
                     break
-
+        
             if found:
                 break
             else:
@@ -97,8 +100,6 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
         l = l + 1
 
-        print("=====================================")
-
         if l > chromolen:
             break
 
@@ -108,9 +109,6 @@ def find_full_fault(ts_fault, fault_percentage):
     full_fault = int(len(ts_fault[0]) * fault_percentage)
 
     for row in ts_fault:
-        print("fault length ", len(ts_fault[0]))
-        print("fault binary ", row.count('1'))
-        print("full fault", full_fault)
         if row.count('1') == full_fault:
             return True
         else:
@@ -130,7 +128,6 @@ def generate_binary_fault(p, tr):
             fault_ba = fault_ba | bitarray(tc_fault[0][1]) # or operator
 
         result[i] = fault_ba.to01() # get string back
-        print(result[i])
 
         i = i + 1
 
@@ -189,7 +186,6 @@ def calculate_fitness(p, tr):
     total_faults = len(tr[0][1])
 
     while True:
-        print("i: ", i, " val: ", p[i])
         fault = ''.join('0' for _ in range(total_faults))
         fault_ba = bitarray(fault)
         for tc in p[i]:
@@ -197,9 +193,7 @@ def calculate_fitness(p, tr):
             fault_ba = fault_ba | bitarray(tc_fault[0][1]) # or operator
 
         fault = fault_ba.to01() # get string back
-        print("fault: ", fault)
         fitness_val[i] = fault.count('1') / total_faults
-        print("fitness: ", fitness_val[i])
 
         i = i + 1
 
@@ -307,9 +301,10 @@ def find_max(p, fitness):
     p_sorted_asc = [p for _, p in sorted(zip(fitness.tolist(), p.tolist()))]
     sorted_fitness = sorted(fitness.tolist())
     result = [p_sorted_asc[len(p_sorted_asc) - 1], sorted_fitness[len(sorted_fitness) - 1]]
-    
-    print("di dalem find max")
-    print(result)
+
+    print(np.array(p_sorted_asc))
+    print("-------------------------------------")
+
     return result
 
 def main():
@@ -340,29 +335,9 @@ def main():
     # max_gen = 70
 
     res = prio_ga(t, tr, max_gen, p_c, p_m)
-    print(res)
-
-    # p = np.asarray(initial_population(t, 4, 3))
-    # print("population:")
-    # print(p)
-
-    # fitness_val = calculate_fitness(p, tr)
-    # print("fitness value:")
-    # print(fitness_val)
-
-    # new_p = crossover(p_c, p, 3)
-    # print("new population:")
-    # print(new_p)
-
-    # mutated_pop = mutation(t, p_m, new_p, 3)
-    # print("mutated population:")
-    # print(mutated_pop)
-
-    # # fitness = np.array([1.0, 0.3, 0.2, 0.4])
-    # fitness_val = calculate_fitness(p, tr)
-    # p_sorted = find_max(mutated_pop, fitness_val)
-    # print("best chromosome:")
-    # print(p_sorted)
+    print("\n=====================================")
+    print("best chromosom is:", res)
+    print("=====================================")
 
 
 if __name__ == "__main__":
