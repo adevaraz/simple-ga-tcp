@@ -35,8 +35,8 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
     p = []
     l = 2           # length of chromosome
-    chromolen = 4
-    pop_size = 4
+    chromolen = len(t)
+    pop_size = 20
     res_min = []
     ts_fault = np.array([])
 
@@ -53,25 +53,41 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
             print("=====================================")
 
-            ts_fault = generate_binary_fault(p, tr)
-
             fitness_val = calculate_fitness(p, tr)
             print("fitness value")
             print(fitness_val)
 
-            new_p = crossover(p_c, p, l)
+            p = crossover(p_c, p, l)
             print("after crossover")
-            print(new_p)
+            print(p)
 
-            new_p = mutation(t, p_m, new_p, l)
+            p = mutation(t, p_m, p, l)
             print("after mutation")
-            print(new_p)
+            print(p)
 
-            if find_full_fault(ts_fault):
-                res_min = find_max(p, fitness_val)
-                print("current res_min")
-                print(res_min)
-                g = g + 1
+            ts_fault = generate_binary_fault(p, tr)
+            fitness_val = calculate_fitness(p, tr)
+            print("fitness value")
+            print(fitness_val)
+
+            fault_percentage = 1.0
+            found = False
+            while not found:
+                print("percentage in prio ga", fault_percentage)
+                if find_full_fault(ts_fault, fault_percentage):
+                    res_min = find_max(p, fitness_val)
+                    print("current res_min")
+                    print(res_min)
+                    found = True
+                else:
+                    fault_percentage = fault_percentage - 0.05
+                    print("percentage in prio ga - after", fault_percentage)
+
+                if fault_percentage <= 0.0:
+                    break
+
+            if found:
+                break
             else:
                 g = g + 1
 
@@ -88,14 +104,14 @@ def prio_ga(t, tr, max_gen, p_c, p_m):
 
     return res_min
 
-def find_full_fault(ts_fault):
-    full_fault = ''.join(str(e) for e in ([1] * len(ts_fault[0])))
+def find_full_fault(ts_fault, fault_percentage):
+    full_fault = int(len(ts_fault[0]) * fault_percentage)
 
     for row in ts_fault:
-        print("find full fault")
-        print("ts_i: ", row)
-        print("full: ", full_fault)
-        if row == full_fault:
+        print("fault length ", len(ts_fault[0]))
+        print("fault binary ", row.count('1'))
+        print("full fault", full_fault)
+        if row.count('1') == full_fault:
             return True
         else:
             return False
@@ -309,11 +325,13 @@ def main():
     max_gen: maximum GA generation
     """
 
-    t = np.array([1, 2, 3, 4]) # tc is represented in number
+    t = np.array([1, 2, 3, 4, 5, 6]) # tc is represented in number
     tr = [(1, '101010'),
           (2, '110100'),
           (3, '001101'),
-          (4, '101000')]
+          (4, '101000'),
+          (5, '000001'),
+          (6, '000000')]
     p_c = 0.6
     p_m = 0.4
     # use three condition of number of generation: 25, 55, and 70
