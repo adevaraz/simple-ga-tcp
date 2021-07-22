@@ -321,15 +321,10 @@ def main():
     """
 
     t = np.array(list(range(1, input.NUMBER_OF_TEST_CASE))) # tc is represented in number
-    # tr = [(1, '101010'),
-    #       (2, '110100'),
-    #       (3, '001101'),
-    #       (4, '101000'),
-    #       (5, '000001'),
-    #       (6, '000000')]
     tr = input.TEST_CASE_MATRIX
     p_c = 0.6
     p_m = 0.4
+    
     # use three condition of number of generation: 25, 55, and 70
     max_gen = 2
     # max_gen = 55
