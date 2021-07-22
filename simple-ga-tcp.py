@@ -14,7 +14,7 @@ import itertools
 import random
 import numpy as np
 from bitarray import bitarray
-from numpy.core.numeric import full
+import input
 
 def prio_ga(t, tr, max_gen, p_c, p_m):
     """
@@ -256,7 +256,7 @@ def mutation(t, p_m, p, l):
     num_of_mutation = p_m * len(p)
 
     # i = int(len(p) / 2)
-    i = 0
+    i = int(len(p) / 2)
     count = 0
     while count <= num_of_mutation and i < len(p):
         mp = random.randrange(1, l)
@@ -320,17 +320,18 @@ def main():
     max_gen: maximum GA generation
     """
 
-    t = np.array([1, 2, 3, 4, 5, 6]) # tc is represented in number
-    tr = [(1, '101010'),
-          (2, '110100'),
-          (3, '001101'),
-          (4, '101000'),
-          (5, '000001'),
-          (6, '000000')]
+    t = np.array(list(range(1, input.NUMBER_OF_TEST_CASE))) # tc is represented in number
+    # tr = [(1, '101010'),
+    #       (2, '110100'),
+    #       (3, '001101'),
+    #       (4, '101000'),
+    #       (5, '000001'),
+    #       (6, '000000')]
+    tr = input.TEST_CASE_MATRIX
     p_c = 0.6
     p_m = 0.4
     # use three condition of number of generation: 25, 55, and 70
-    max_gen = 25
+    max_gen = 2
     # max_gen = 55
     # max_gen = 70
 
